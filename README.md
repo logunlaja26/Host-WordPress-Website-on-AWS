@@ -146,7 +146,7 @@ Below is a high-level summary of the deployment process. Refer to the scripts in
 │   └── aws-wordpress-architecture.png      # Reference architecture diagram
 ├── scripts/
 │   ├── install-wordpress.sh                # Script for WordPress installation/configuration in AWS EC2 instance
-│   ├── create-ec2-resources.sh             # Script to launch EC2 instances and set up ASG
+│   ├── launch-template-script.sh           # Script to launch EC2 instances in ASG launch template
 ├── README.md                               # This file
 └── ...
 ```
