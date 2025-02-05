@@ -1,7 +1,17 @@
-#!/bin/bash
+# create to root user
+sudo su
 
 # update the software packages on the ec2 instance 
 sudo yum update -y
+
+# create an html directory 
+sudo mkdir -p /var/www/html
+
+# environment variable
+EFS_DNS_NAME=fs-064e9505819af10a4.efs.us-east-1.amazonaws.com
+
+# mount the efs to the html directory 
+sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport "$EFS_DNS_NAME":/ /var/www/html
 
 # install the apache web server, enable it to start on boot, and then start the server immediately
 sudo yum install -y httpd
@@ -43,15 +53,23 @@ sudo dnf install -y mysql-community-server
 sudo systemctl start mysqld
 sudo systemctl enable mysqld
 
-# environment variable
-EFS_DNS_NAME=fs-0abf40232ff02576f.efs.us-east-2.amazonaws.com
-
-# mount the efs to the html directory 
-echo "$EFS_DNS_NAME:/ /var/www/html nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 0 0" >> /etc/fstab
-mount -a
-
 # set permissions
-chown apache:apache -R /var/www/html
+sudo usermod -a -G apache ec2-user
+sudo chown -R ec2-user:apache /var/www
+sudo chmod 2775 /var/www && find /var/www -type d -exec sudo chmod 2775 {} \;
+sudo find /var/www -type f -exec sudo chmod 0664 {} \;
+chown apache:apache -R /var/www/html 
+
+# download wordpress files
+wget https://wordpress.org/latest.tar.gz
+tar -xzf latest.tar.gz
+sudo cp -r wordpress/* /var/www/html/
+
+# create the wp-config.php file
+sudo cp /var/www/html/wp-config-sample.php /var/www/html/wp-config.php
+
+# edit the wp-config.php file
+sudo vi /var/www/html/wp-config.php
 
 # restart the webserver
 sudo service httpd restart
